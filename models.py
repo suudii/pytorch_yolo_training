@@ -127,6 +127,7 @@ class YOLOLayer(nn.Module):
         ByteTensor = torch.cuda.ByteTensor if x.is_cuda else torch.ByteTensor
 
         prediction = x.view(nB, nA, self.bbox_attrs, nG, nG).permute(0, 1, 3, 4, 2).contiguous()
+        #print(prediction)
 
         # Get outputs
         x = torch.sigmoid(prediction[..., 0])  # Center x
@@ -203,7 +204,6 @@ class YOLOLayer(nn.Module):
             )
             loss_cls = (1 / nB) * self.ce_loss(pred_cls[mask], torch.argmax(tcls[mask], 1))
             loss = loss_x + loss_y + loss_w + loss_h + loss_conf + loss_cls
-
             return (
                 loss,
                 loss_x.item(),
@@ -214,6 +214,9 @@ class YOLOLayer(nn.Module):
                 loss_cls.item(),
                 recall,
                 precision,
+                nCorrect,
+                nProposals,
+		nGT,
             )
 
         else:
@@ -239,7 +242,7 @@ class Darknet(nn.Module):
         self.img_size = img_size
         self.seen = 0
         self.header_info = np.array([0, 0, 0, self.seen, 0])
-        self.loss_names = ["x", "y", "w", "h", "conf", "cls", "recall", "precision"]
+        self.loss_names = ["x", "y", "w", "h", "conf", "cls", "recall", "precision", "nCorrect","nProp", "nGT"]
 
     def forward(self, x, targets=None):
         is_training = targets is not None
