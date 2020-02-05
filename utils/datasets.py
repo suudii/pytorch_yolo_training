@@ -52,7 +52,7 @@ class ListDataset(Dataset):
             self.img_files = file.readlines()
         self.label_files = [path.replace('images', 'labels').replace('.jpg', '.txt') for path in self.img_files]
         self.img_shape = (img_size, img_size)
-        self.max_objects = 1
+        self.max_objects = 40
 
     def __getitem__(self, index):
 
@@ -94,6 +94,8 @@ class ListDataset(Dataset):
         labels = None
         if os.path.exists(label_path):
             labels = np.loadtxt(label_path).reshape(-1, 5)
+            #print(len(labels))
+            self.max_objects = 30
             # Extract coordinates for unpadded + unscaled image
             x1 = w * (labels[:, 1] - labels[:, 3]/2)
             y1 = h * (labels[:, 2] - labels[:, 4]/2)
@@ -115,6 +117,7 @@ class ListDataset(Dataset):
             filled_labels[range(len(labels))[:self.max_objects]] = labels[:self.max_objects]
         filled_labels = torch.from_numpy(filled_labels)
 
+        #print(filled_labels)
         return img_path, input_img, filled_labels
 
     def __len__(self):

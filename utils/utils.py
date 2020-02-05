@@ -124,7 +124,7 @@ def bbox_iou_numpy(box1, box2):
     return intersection / ua
 
 
-def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4):
+def non_max_suppression(prediction, num_classes, conf_thres=0.75, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres' and performs
     Non-Maximum Suppression to further filter detections.
@@ -202,8 +202,13 @@ def build_targets(
 
     nGT = 0
     nCorrect = 0
+    #print(nB)
+    #print(target.shape[0])
+
+
     for b in range(nB):
         for t in range(target.shape[1]):
+            #print(target[b, t])
             if target[b, t].sum() == 0:
                 continue
             nGT += 1
@@ -246,10 +251,11 @@ def build_targets(
             # Calculate iou between ground truth and best matching prediction
             iou = bbox_iou(gt_box, pred_box, x1y1x2y2=False)
             pred_label = torch.argmax(pred_cls[b, best_n, gj, gi])
+            #print(pred_label)
             score = pred_conf[b, best_n, gj, gi]
             if iou > 0.5 and pred_label == target_label and score > 0.5:
                 nCorrect += 1
-
+            
     return nGT, nCorrect, mask, conf_mask, tx, ty, tw, th, tconf, tcls
 
 

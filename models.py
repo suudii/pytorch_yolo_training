@@ -127,7 +127,7 @@ class YOLOLayer(nn.Module):
         ByteTensor = torch.cuda.ByteTensor if x.is_cuda else torch.ByteTensor
 
         prediction = x.view(nB, nA, self.bbox_attrs, nG, nG).permute(0, 1, 3, 4, 2).contiguous()
-        #print(prediction)
+        
 
         # Get outputs
         x = torch.sigmoid(prediction[..., 0])  # Center x
@@ -136,6 +136,8 @@ class YOLOLayer(nn.Module):
         h = prediction[..., 3]  # Height
         pred_conf = torch.sigmoid(prediction[..., 4])  # Conf
         pred_cls = torch.sigmoid(prediction[..., 5:])  # Cls pred.
+
+        
 
         # Calculate offsets for each grid
         grid_x = torch.arange(nG).repeat(nG, 1).view([1, 1, nG, nG]).type(FloatTensor)
@@ -171,6 +173,7 @@ class YOLOLayer(nn.Module):
                 ignore_thres=self.ignore_thres,
                 img_dim=self.image_dim,
             )
+
 
             nProposals = int((pred_conf > 0.5).sum().item())
             recall = float(nCorrect / nGT) if nGT else 1
